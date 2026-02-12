@@ -84,7 +84,7 @@ export function TemplateManager({ onBuild, onEdit }) {
         href="https://www.loom.com/share/16290730bc4c44198b8746965b801572"
         target="_blank"
         rel="noopener noreferrer"
-        className="btn-secondary walkthrough-btn"
+        className="walkthrough-btn"
       >
         Watch walkthrough for how to create a proposal
       </a>

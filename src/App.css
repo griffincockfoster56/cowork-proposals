@@ -450,12 +450,18 @@ body {
   align-items: center;
 }
 
-/* Walkthrough link */
+/* Walkthrough buttons */
+.walkthrough-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
 .walkthrough-btn {
+  flex: 1;
   display: block;
   text-decoration: none;
   text-align: center;
-  margin-bottom: 24px;
   padding: 12px 20px;
   background: #2B3A67;
   color: #fff;

@@ -70,7 +70,7 @@ export function TemplateManager({ onBuild, onEdit }) {
       <div className="manager-header">
         <h1>Proposal Templates</h1>
         <label className="btn-primary upload-btn">
-          Upload PDF
+          Create New Proposal Template
           <input
             type="file"
             accept=".pdf"
@@ -80,14 +80,24 @@ export function TemplateManager({ onBuild, onEdit }) {
         </label>
       </div>
 
-      <a
-        href="https://www.loom.com/share/16290730bc4c44198b8746965b801572"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="walkthrough-btn"
-      >
-        Watch walkthrough for how to create a proposal
-      </a>
+      <div className="walkthrough-buttons">
+        <a
+          href="https://www.loom.com/share/16290730bc4c44198b8746965b801572"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="walkthrough-btn"
+        >
+          Watch walkthrough for how to create a proposal
+        </a>
+        <a
+          href="https://www.loom.com/share/c34ade10ab2446edb39fe86c57ddd034"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="walkthrough-btn"
+        >
+          Watch walkthrough for how to create a new proposal template
+        </a>
+      </div>
 
       <div className="template-grid">
         {configs.length === 0 && (

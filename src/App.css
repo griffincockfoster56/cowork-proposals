@@ -1017,3 +1017,27 @@ body {
 .btn-auto-select:hover {
   background: #3d4f7a;
 }
+
+/* ==================== AI Help Link ==================== */
+.ai-help-link {
+  font-size: 13px;
+  color: #2B3A67;
+  text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ai-help-link:hover {
+  background: #f0f4ff;
+  border-color: #2B3A67;
+}
+
+.walkthrough-buttons .ai-help-link {
+  flex: none;
+  align-self: center;
+}

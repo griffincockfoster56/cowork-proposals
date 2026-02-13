@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { PageSelector } from './PageSelector';
 import { PdfPreview } from './PdfPreview';
 import { exportSelectedPages } from '../utils/pdfExport';
+import { getChatUrl } from '../utils/chatHelp';
 
 export function ProposalBuilder({ config, pdfBlobUrl, onBack }) {
   const [selectedPages, setSelectedPages] = useState(new Set());
@@ -146,6 +147,14 @@ export function ProposalBuilder({ config, pdfBlobUrl, onBack }) {
           )}
           <h1>Proposal Builder</h1>
           <div className="tools-actions">
+            <a
+              href={getChatUrl('buildHelp')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ai-help-link"
+            >
+              Ask AI for help
+            </a>
             <button
               onClick={handleExport}
               className="btn-primary"

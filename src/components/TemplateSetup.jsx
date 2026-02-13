@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PageTagger } from './PageTagger';
 import { ConfigEditor } from './ConfigEditor';
+import { getChatUrl } from '../utils/chatHelp';
 
 export function TemplateSetup({ config: initialConfig, pdfBlobUrl, onSave, onCancel }) {
   const [config, setConfig] = useState(initialConfig);
@@ -39,6 +40,14 @@ export function TemplateSetup({ config: initialConfig, pdfBlobUrl, onSave, onCan
             onChange={(e) => handleUpdateName(e.target.value)}
           />
         </div>
+        <a
+          href={getChatUrl('setupTemplate')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ai-help-link"
+        >
+          Ask AI for help
+        </a>
         <button onClick={handleSave} className="btn-primary">
           Save Template
         </button>

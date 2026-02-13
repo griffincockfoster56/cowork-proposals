@@ -4,6 +4,7 @@ import { savePdf, deletePdf } from '../storage/pdfStorage';
 import { createBlankConfig } from '../config/templateConfig';
 import { TemplateCard } from './TemplateCard';
 import { PDFDocument } from 'pdf-lib';
+import { getChatUrl } from '../utils/chatHelp';
 
 export function TemplateManager({ onBuild, onEdit }) {
   const [configs, setConfigs] = useState([]);
@@ -82,20 +83,28 @@ export function TemplateManager({ onBuild, onEdit }) {
 
       <div className="walkthrough-buttons">
         <a
-          href="https://www.loom.com/share/16290730bc4c44198b8746965b801572"
+          href={getChatUrl('buildProposal')}
           target="_blank"
           rel="noopener noreferrer"
           className="walkthrough-btn"
         >
-          Watch walkthrough for how to create a proposal
+          How do I create a proposal?
         </a>
         <a
-          href="https://www.loom.com/share/c34ade10ab2446edb39fe86c57ddd034"
+          href={getChatUrl('createTemplate')}
           target="_blank"
           rel="noopener noreferrer"
           className="walkthrough-btn"
         >
-          Watch walkthrough for how to create a new proposal template
+          How do I create a new template?
+        </a>
+        <a
+          href={getChatUrl('general')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ai-help-link"
+        >
+          Ask AI for help
         </a>
       </div>
 

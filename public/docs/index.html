@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cowork Proposals - Documentation</title>
+  <style>
+    :root {
+      --blue: #2B3A67;
+      --gray: #666;
+      --light-gray: #f5f5f5;
+      --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #333;
+      line-height: 1.7;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    h1 { color: var(--blue); font-size: 28px; margin-bottom: 8px; }
+    h2 { color: var(--blue); font-size: 22px; margin-top: 48px; margin-bottom: 12px; border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+    h3 { color: #444; font-size: 17px; margin-top: 28px; margin-bottom: 8px; }
+    p { margin-bottom: 12px; }
+    ul, ol { margin-bottom: 12px; padding-left: 24px; }
+    li { margin-bottom: 4px; }
+    code { background: var(--light-gray); padding: 2px 6px; border-radius: 3px; font-size: 14px; }
+    pre { background: var(--light-gray); padding: 16px; border-radius: 6px; overflow-x: auto; margin-bottom: 16px; font-size: 13px; line-height: 1.5; }
+    pre code { background: none; padding: 0; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; font-size: 14px; }
+    th { background: var(--light-gray); font-weight: 600; }
+    .subtitle { color: var(--gray); font-size: 16px; margin-bottom: 32px; }
+    .back-link { display: inline-block; margin-bottom: 24px; color: var(--blue); text-decoration: none; font-size: 14px; }
+    .back-link:hover { text-decoration: underline; }
+    .toc { background: var(--light-gray); border-radius: 8px; padding: 20px 24px; margin-bottom: 32px; }
+    .toc h3 { margin-top: 0; }
+    .toc ol { margin-bottom: 0; }
+    .toc a { color: var(--blue); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .note { background: #fff8e1; border-left: 4px solid #ffc107; padding: 12px 16px; margin-bottom: 16px; border-radius: 0 4px 4px 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<a href="/" class="back-link">&larr; Back to App</a>
+
+<h1>Cowork Proposals Documentation</h1>
+<p class="subtitle">Complete guide to building customized PDF proposals from coworking space templates.</p>
+
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#app-modes">App Modes</a></li>
+    <li><a href="#templates">Managing Templates</a></li>
+    <li><a href="#setup">Configuring a Template (Setup Mode)</a></li>
+    <li><a href="#page-types">Page Types</a></li>
+    <li><a href="#drawing-rectangles">Drawing Rectangles</a></li>
+    <li><a href="#building">Building a Proposal (Builder Mode)</a></li>
+    <li><a href="#auto-select">Auto-Select Feature</a></li>
+    <li><a href="#custom-prices">Custom Prices</a></li>
+    <li><a href="#conference-text">Conference Room Text</a></li>
+    <li><a href="#preview">Live Preview</a></li>
+    <li><a href="#export">Exporting a PDF</a></li>
+    <li><a href="#export-details">What the Export Does</a></li>
+    <li><a href="#summary-page">Summary Page</a></li>
+    <li><a href="#coordinate-system">Coordinate System (Technical)</a></li>
+    <li><a href="#config-structure">Config Data Structure (Technical)</a></li>
+    <li><a href="#storage">Storage (Technical)</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="overview">1. Overview</h2>
+
+<p>Cowork Proposals is a web app for creating customized PDF proposals from coworking space master templates. The typical workflow is:</p>
+<ol>
+  <li><strong>Upload</strong> a master PDF template containing all floors, suites, conference rooms, and amenity pages.</li>
+  <li><strong>Configure</strong> the template: tag each page's type (overview, suite, conference, or other), draw regions for price redaction and text replacement, set default prices and text.</li>
+  <li><strong>Build</strong> proposals: select which pages to include, enter custom prices or text, then export a tailored PDF for the prospective tenant.</li>
+</ol>
+<p>The exported PDF includes only the selected pages, with custom pricing badges replacing the original price rows, custom conference room text replacing the original, red highlight borders on floor plan overviews showing which suites are included, and an auto-generated summary page listing all selected suites with prices and desk counts.</p>
+
+<!-- ============================================================ -->
+<h2 id="app-modes">2. App Modes</h2>
+
+<p>The app has three main modes:</p>
+
+<table>
+  <tr><th>Mode</th><th>Purpose</th><th>When to Use</th></tr>
+  <tr>
+    <td><strong>Manager</strong></td>
+    <td>View all templates, upload new PDFs, delete templates</td>
+    <td>Starting point. This is the home screen.</td>
+  </tr>
+  <tr>
+    <td><strong>Setup</strong></td>
+    <td>Configure a template's pages: tag types, draw rectangles, set defaults</td>
+    <td>After uploading a new template, or to edit an existing template's configuration.</td>
+  </tr>
+  <tr>
+    <td><strong>Builder</strong></td>
+    <td>Select pages, customize prices/text, preview, and export PDF</td>
+    <td>When creating a proposal for a specific prospect.</td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="templates">3. Managing Templates</h2>
+
+<h3>Uploading a New Template</h3>
+<p>Click <strong>"Create New Proposal Template"</strong> on the manager screen and select a PDF file. The app will:</p>
+<ul>
+  <li>Read the PDF and extract the page count and page dimensions.</li>
+  <li>Create a new template config with all pages initially tagged as "other".</li>
+  <li>Store the PDF and config.</li>
+  <li>Automatically open the template in Setup mode so you can configure it.</li>
+</ul>
+
+<h3>Default Template</h3>
+<p>On first launch, the app creates a default "123 Main St" template with pre-configured pages, prices, and highlight rectangles. This serves as an example of a fully configured template.</p>
+
+<h3>Deleting a Template</h3>
+<p>Click the "Delete" button on a template card. This removes both the config and the stored PDF. The default template cannot be deleted.</p>
+
+<!-- ============================================================ -->
+<h2 id="setup">4. Configuring a Template (Setup Mode)</h2>
+
+<p>Setup mode has a two-panel layout:</p>
+<ul>
+  <li><strong>Left panel (Page Tagger):</strong> A scrollable list of all pages in the PDF with thumbnails. Each page has an editable label and a type dropdown.</li>
+  <li><strong>Right panel (Config Editor):</strong> Detailed configuration for the currently selected page. The UI changes based on the page's type.</li>
+</ul>
+
+<h3>Setting Page Types</h3>
+<p>Use the dropdown next to each page in the left panel to set its type. This determines what configuration options appear in the right panel and how the page is handled during export.</p>
+
+<h3>Editing Labels</h3>
+<p>Click the label text next to any page thumbnail to rename it. Labels appear in the builder's page list and on the summary page.</p>
+
+<h3>Saving</h3>
+<p>Click the <strong>Save</strong> button at the top of the setup screen to persist your configuration. If you click Cancel or navigate away without saving, changes are lost.</p>
+
+<!-- ============================================================ -->
+<h2 id="page-types">5. Page Types</h2>
+
+<h3>Other</h3>
+<p>The default type for all pages. No special configuration. The page is included as-is when selected in the builder. Use this for cover pages, amenity pages, or any page that doesn't need custom pricing or text.</p>
+
+<h3>Overview</h3>
+<p>A floor plan page that shows where suites are located. In setup, you link suite pages to this overview by checking boxes. During export, red border rectangles are drawn on the overview to highlight which suites are included in the proposal.</p>
+<p><strong>Configuration:</strong></p>
+<ul>
+  <li><strong>Linked Suite Pages:</strong> Checkbox list of all suite-tagged pages. Check the suites that appear on this floor plan.</li>
+</ul>
+
+<h3>Suite</h3>
+<p>An individual office/suite page with pricing information. This is the most configurable page type.</p>
+<p><strong>Configuration:</strong></p>
+<ul>
+  <li><strong>Overview Page:</strong> Dropdown to select which overview/floor plan this suite appears on. Required before you can draw highlight rectangles.</li>
+  <li><strong>Draw Mode &mdash; Suite Highlight (blue):</strong> Draw rectangles on the linked overview page to mark where this suite is located on the floor plan. You can draw multiple highlight rects per suite.</li>
+  <li><strong>Draw Mode &mdash; List Price Row (orange):</strong> Draw a single rectangle over the list price row on the suite page. This area will be covered during export when a custom price is set.</li>
+  <li><strong>Draw Mode &mdash; Founding Price Row (green):</strong> Draw a single rectangle over the founding member price row. Also covered during export.</li>
+  <li><strong>Rented:</strong> Check this if the suite is currently rented/unavailable. Rented suites show a badge in the builder and can be excluded via auto-select.</li>
+  <li><strong>Desks:</strong> Number of desks/workstations in the suite. Shown in the builder and used for auto-select filtering. Also appears on the summary page.</li>
+  <li><strong>List Price:</strong> Default list price (e.g., "$9,625"). Auto-extracted from the PDF when you draw the list price rectangle. Shown on the summary page if no custom price is entered. Auto-formatted as $X,XXX on blur.</li>
+  <li><strong>Founding Price:</strong> Default founding member price. Auto-extracted from the PDF when you draw the founding price rectangle.</li>
+</ul>
+
+<h3>Conference</h3>
+<p>A conference room page with customizable text (e.g., "Includes 30 hours/month"). The user draws a rectangle over the text to replace and enters default text.</p>
+<p><strong>Configuration:</strong></p>
+<ul>
+  <li><strong>Text Redaction (purple):</strong> Draw a single rectangle over the text you want to replace. The text within the rectangle is auto-extracted and pre-populated as the default text.</li>
+  <li><strong>Default Text:</strong> The replacement text to use when no custom text is entered in the builder (e.g., "Includes 30 hours/month"). If left empty and no custom text is entered, the original text stays untouched in the export.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="drawing-rectangles">6. Drawing Rectangles</h2>
+
+<p>The rectangle drawer is used in Setup mode to mark regions on PDF pages for price redaction, text redaction, and suite highlighting.</p>
+
+<h3>How to Draw</h3>
+<ol>
+  <li>Select the appropriate draw mode from the toolbar (e.g., "Suite Highlight", "List Price Row", "Text Redaction").</li>
+  <li>Click and drag on the PDF page image to draw a rectangle.</li>
+  <li>Release the mouse button to finalize the rectangle.</li>
+</ol>
+
+<h3>Deleting Rectangles</h3>
+<p>Hover over a rectangle and click the red circle "x" button at its top-right corner to delete it.</p>
+
+<h3>Important Notes</h3>
+<ul>
+  <li><strong>Suite highlights</strong> are drawn on the overview page (not the suite page). Select an overview page in the dropdown first.</li>
+  <li><strong>List Price</strong> and <strong>Founding Price</strong> rectangles are single-rect &mdash; drawing a new one replaces the old one.</li>
+  <li><strong>Conference Text Redaction</strong> is also single-rect.</li>
+  <li>When you draw a price or text redaction rectangle, the app automatically extracts the text from the PDF within that region and pre-fills the default value.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="building">7. Building a Proposal (Builder Mode)</h2>
+
+<p>Builder mode has a two-panel layout:</p>
+<ul>
+  <li><strong>Left panel:</strong> Page selection list with thumbnails, checkboxes, custom inputs, and auto-select controls.</li>
+  <li><strong>Right panel:</strong> Live preview of the proposal with all selected pages rendered.</li>
+</ul>
+
+<h3>Selecting Pages</h3>
+<ul>
+  <li>Click a page or its checkbox to toggle selection.</li>
+  <li>Use <strong>Select All</strong> / <strong>Select None</strong> buttons for quick selection.</li>
+  <li>Use the <strong>Auto-Select</strong> feature (see below) to select suites by floor with filters.</li>
+</ul>
+
+<h3>Page Information</h3>
+<p>Each page in the list shows:</p>
+<ul>
+  <li>Page number and label</li>
+  <li>Desk count (for suite pages)</li>
+  <li>"Rented" badge (for suites marked as rented)</li>
+  <li>Custom Price input (for selected suite pages with price redaction configured)</li>
+  <li>Conference Hours input (for selected conference pages with text redaction configured)</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="auto-select">8. Auto-Select Feature</h2>
+
+<p>When the template has overview pages with linked suites, the auto-select section appears above the page list. It groups suites by floor/overview and lets you bulk-select based on criteria.</p>
+
+<p>For each overview group:</p>
+<ul>
+  <li><strong>Min desks:</strong> Only include suites with at least this many desks.</li>
+  <li><strong>Max desks:</strong> Only include suites with at most this many desks. Leave blank for no upper limit.</li>
+  <li><strong>Exclude rented:</strong> When checked (default), skip suites marked as rented.</li>
+  <li><strong>Select button:</strong> Adds the overview page and all matching suites to the current selection (does not deselect anything already selected).</li>
+</ul>
+
+<p>The group header shows the count of available (non-rented) suites out of the total linked suites.</p>
+
+<!-- ============================================================ -->
+<h2 id="custom-prices">9. Custom Prices</h2>
+
+<p>When a suite page is selected and has price redaction rectangles configured, a "Custom Price" input appears below the page in the list.</p>
+
+<ul>
+  <li>Enter a custom price (e.g., "$5,000/month") to replace the original pricing in the exported PDF.</li>
+  <li>If you leave it blank, the original price rows stay visible in the export (no redaction occurs).</li>
+  <li>The custom price is shown on the auto-generated summary page. If no custom price is entered, the suite's default list price from the config is used on the summary page instead.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="conference-text">10. Conference Room Text</h2>
+
+<p>When a conference page is selected and has text redaction configured, a "Conference Hours" input appears below the page in the list.</p>
+
+<ul>
+  <li>The placeholder shows the default text from the config (e.g., "Includes 30 hours/month").</li>
+  <li>Enter custom text (e.g., "Includes 40 hours/month") to replace the original in the exported PDF.</li>
+  <li>If you leave it blank:
+    <ul>
+      <li>If there is a default text in the config, the default is used for the replacement.</li>
+      <li>If there is no default text, the original text stays untouched (no redaction).</li>
+    </ul>
+  </li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="preview">11. Live Preview</h2>
+
+<p>The right panel of the builder shows a live rendering of the proposal. Pages are rendered at 1.5x scale for quality.</p>
+
+<p><strong>What the preview shows:</strong></p>
+<ul>
+  <li>All selected pages in order.</li>
+  <li>Red border rectangles on overview pages indicating which suites are selected.</li>
+  <li>A generated summary page (if suites are selected) inserted after the first overview page.</li>
+</ul>
+
+<p><strong>What the preview does NOT show:</strong></p>
+<ul>
+  <li>Price redaction/replacement. The original PDF pages are shown as-is. Custom prices only appear in the exported PDF.</li>
+  <li>Conference text replacement. Same as prices &mdash; only applied in the export.</li>
+</ul>
+
+<div class="note">
+  <strong>Note:</strong> The preview reflects page selection and highlight overlays in real-time, but price and text redaction are export-only. This is by design &mdash; the preview shows the original template content, and the export applies all transformations.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="export">12. Exporting a PDF</h2>
+
+<p>Click the <strong>"Export PDF (N pages)"</strong> button at the top of the builder to generate and download the proposal.</p>
+
+<ul>
+  <li>The file is named <code>proposal-YYYY-MM-DD.pdf</code> with today's date.</li>
+  <li>The exported PDF contains only the selected pages, in page order.</li>
+  <li>All transformations (price badges, text replacement, highlight borders, summary page) are applied in the export.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="export-details">13. What the Export Does</h2>
+
+<p>The export process applies these transformations to each page:</p>
+
+<h3>Suite Pages (with custom price entered)</h3>
+<ol>
+  <li>The list price row and founding price row regions are covered with a cream-colored rectangle (matching the page background).</li>
+  <li>A styled badge is drawn centered vertically between where the two rows were:
+    <ul>
+      <li><strong>Left half:</strong> Blue background with white "Price" text (bold).</li>
+      <li><strong>Right half:</strong> Gray background with the custom price text in blue.</li>
+    </ul>
+  </li>
+</ol>
+<p>If no custom price is entered for a suite page, the original price rows remain visible.</p>
+
+<h3>Conference Pages (with custom or default text)</h3>
+<ol>
+  <li>The text redaction region is covered with a cream-colored rectangle.</li>
+  <li>The replacement text (custom or default) is drawn centered in the redacted area in 12pt dark gray Helvetica.</li>
+</ol>
+<p>If no custom text is entered and no default text is configured, the original text remains visible.</p>
+
+<h3>Overview Pages</h3>
+<p>Red 2px border rectangles are drawn at the configured highlight positions for each selected suite linked to this overview page. This visually indicates which suites are included in the proposal on the floor plan.</p>
+
+<!-- ============================================================ -->
+<h2 id="summary-page">14. Summary Page</h2>
+
+<p>When any suite pages are selected, a summary page is automatically generated and inserted after the first overview page in the exported PDF (and in the live preview).</p>
+
+<p>The summary page contains:</p>
+<ul>
+  <li>A "Proposal Summary" title in blue.</li>
+  <li>A three-column table with one row per selected suite:
+    <ul>
+      <li><strong>Column 1 (blue background):</strong> Suite name (from the page label, using the part before " - " if present).</li>
+      <li><strong>Column 2 (gray background):</strong> Price &mdash; uses the custom price if entered, otherwise the suite's default list price from the config.</li>
+      <li><strong>Column 3 (blue background):</strong> "up to N desks" if desk count is configured.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>The summary page uses the template's configured style colors (or defaults: cream background, navy blue accents, light gray).</p>
+
+<!-- ============================================================ -->
+<h2 id="coordinate-system">15. Coordinate System (Technical)</h2>
+
+<p>Rectangle coordinates stored in the config use the <strong>PDF coordinate system</strong> (bottom-left origin, Y increases upward). This is important when working with the config data programmatically.</p>
+
+<table>
+  <tr><th>System</th><th>Origin</th><th>Y Direction</th><th>Used By</th></tr>
+  <tr><td>PDF (pdf-lib)</td><td>Bottom-left</td><td>Up</td><td>Config storage, export rendering</td></tr>
+  <tr><td>Canvas/SVG</td><td>Top-left</td><td>Down</td><td>Rectangle drawer UI, preview highlights</td></tr>
+</table>
+
+<p>Conversion between systems uses the page height:</p>
+<pre><code>// PDF to Canvas/SVG
+svgY = pageHeight - pdfY - rectHeight
+
+// Canvas/SVG to PDF
+pdfY = pageHeight - svgY - rectHeight</code></pre>
+
+<p>The app handles this conversion automatically. You only need to be aware of it if inspecting or modifying config data directly.</p>
+
+<!-- ============================================================ -->
+<h2 id="config-structure">16. Config Data Structure (Technical)</h2>
+
+<p>Each template has a config object stored in JSON. Here is the complete structure:</p>
+
+<pre><code>{
+  "id": "string (UUID)",
+  "name": "string (display name)",
+  "pdfStorageKey": "string (key for PDF blob in storage)",
+  "pageDimensions": {
+    "width": 540,
+    "height": 779
+  },
+  "style": {
+    "backgroundFill": { "r": 255, "g": 253, "b": 245 },
+    "badgeBlue": { "r": 43, "g": 58, "b": 103 },
+    "badgeGray": { "r": 235, "g": 235, "b": 235 }
+  },
+  "pages": [
+    {
+      "pageIndex": 0,
+      "label": "Page 1",
+      "type": "other | overview | suite | conference",
+
+      "overviewConfig": {
+        "suitePageIndices": [1, 2, 3]
+      },
+
+      "suiteConfig": {
+        "overviewPageIndex": 0,
+        "highlightRects": [
+          { "x": 75, "y": 332, "width": 47, "height": 85 }
+        ],
+        "priceRedaction": {
+          "listPrice": { "x": 52, "y": 152, "width": 440, "height": 32 },
+          "foundingPrice": { "x": 52, "y": 118, "width": 440, "height": 32 }
+        },
+        "deskCount": 4,
+        "rented": false,
+        "listPrice": "$9,625",
+        "foundingMemberPrice": "$8,500"
+      },
+
+      "conferenceConfig": {
+        "textRedaction": { "x": 100, "y": 200, "width": 300, "height": 20 },
+        "defaultText": "Includes 30 hours/month"
+      }
+    }
+  ]
+}</code></pre>
+
+<div class="note">
+  <strong>Note:</strong> Only the sub-config matching the page type is present. A suite page has <code>suiteConfig</code> but not <code>overviewConfig</code> or <code>conferenceConfig</code>. An "other" page has none of the sub-configs.
+</div>
+
+<h3>Page Number Indexing</h3>
+<table>
+  <tr><th>Context</th><th>Indexing</th><th>Example</th></tr>
+  <tr><td>Config <code>pages</code> array</td><td>0-indexed</td><td><code>config.pages[0]</code> = first page</td></tr>
+  <tr><td><code>pageIndex</code> field</td><td>0-indexed</td><td><code>0</code> = first page</td></tr>
+  <tr><td><code>suitePageIndices</code></td><td>0-indexed</td><td><code>[1, 2]</code> = pages 2 and 3</td></tr>
+  <tr><td><code>overviewPageIndex</code></td><td>0-indexed</td><td><code>0</code> = first page</td></tr>
+  <tr><td>UI page numbers</td><td>1-indexed</td><td>"Page 1" = first page</td></tr>
+  <tr><td><code>selectedPages</code> Set</td><td>1-indexed</td><td><code>Set([1, 3])</code> = pages 1 and 3</td></tr>
+  <tr><td>Export <code>selectedPageNumbers</code></td><td>1-indexed</td><td><code>[1, 3, 5]</code></td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="storage">17. Storage (Technical)</h2>
+
+<h3>Config Storage</h3>
+<p>Template configs are stored as JSON. The app uses Supabase as the primary backend if configured, otherwise falls back to browser localStorage.</p>
+<ul>
+  <li><strong>Supabase:</strong> Table <code>configs</code> with columns <code>id</code> (primary key) and <code>data</code> (jsonb).</li>
+  <li><strong>localStorage:</strong> Key <code>cowork-template-configs</code>, value is a JSON object mapping config IDs to config objects.</li>
+</ul>
+
+<h3>PDF Storage</h3>
+<p>PDF files are stored as binary blobs. The app uses Supabase Storage if configured, otherwise falls back to browser IndexedDB.</p>
+<ul>
+  <li><strong>Supabase:</strong> Bucket <code>pdfs</code>, file path is the PDF storage key.</li>
+  <li><strong>IndexedDB:</strong> Database <code>cowork-proposals</code> (version 1), object store <code>pdfs</code>, key is the PDF storage key, value is an ArrayBuffer.</li>
+</ul>
+
+<p>The default template uses a static <code>/template.pdf</code> file served by the web server, not stored in IndexedDB or Supabase.</p>
+
+</body>
+</html>

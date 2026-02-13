@@ -58,7 +58,12 @@ export function PageTagger({ config, pdfBlobUrl, selectedPageIndex, onSelectPage
         highlightRects: [],
         priceRedaction: null,
         deskCount: null,
+        listPrice: null,
+        foundingMemberPrice: null,
       };
+    }
+    if (type === 'conference' && !config.pages[pageIndex].conferenceConfig) {
+      updates.conferenceConfig = { textRedaction: null, defaultText: null };
     }
     // Clean up unused sub-configs
     if (type !== 'overview') {
@@ -66,6 +71,9 @@ export function PageTagger({ config, pdfBlobUrl, selectedPageIndex, onSelectPage
     }
     if (type !== 'suite') {
       updates.suiteConfig = undefined;
+    }
+    if (type !== 'conference') {
+      updates.conferenceConfig = undefined;
     }
 
     onUpdatePage(pageIndex, updates);
@@ -111,6 +119,7 @@ export function PageTagger({ config, pdfBlobUrl, selectedPageIndex, onSelectPage
                 <option value="other">Other</option>
                 <option value="overview">Overview</option>
                 <option value="suite">Suite</option>
+                <option value="conference">Conference</option>
               </select>
             </div>
           </div>

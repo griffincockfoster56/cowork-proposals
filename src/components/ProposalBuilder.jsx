@@ -8,6 +8,7 @@ export function ProposalBuilder({ config, pdfBlobUrl, onBack }) {
   const [pageCount, setPageCount] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
   const [customPrices, setCustomPrices] = useState({});
+  const [customConferenceText, setCustomConferenceText] = useState({});
   const [autoSelectState, setAutoSelectState] = useState({});
   // autoSelectState keyed by overview pageIndex: { minDesks: number, excludeRented: boolean }
 
@@ -27,6 +28,10 @@ export function ProposalBuilder({ config, pdfBlobUrl, onBack }) {
 
   const setCustomPrice = (pageNum, value) => {
     setCustomPrices((prev) => ({ ...prev, [pageNum]: value }));
+  };
+
+  const setConferenceText = (pageNum, value) => {
+    setCustomConferenceText((prev) => ({ ...prev, [pageNum]: value }));
   };
 
   const selectAll = () => {
@@ -58,7 +63,7 @@ export function ProposalBuilder({ config, pdfBlobUrl, onBack }) {
           prices[pageNum] = customPrices[pageNum];
         }
       });
-      await exportSelectedPages(templateUrl, sortedPages, prices, config);
+      await exportSelectedPages(templateUrl, sortedPages, prices, config, customConferenceText);
     } catch (error) {
       console.error('Export failed:', error);
       alert('Failed to export PDF');
@@ -228,6 +233,8 @@ export function ProposalBuilder({ config, pdfBlobUrl, onBack }) {
           pageData={pageData}
           customPrices={customPrices}
           onSetCustomPrice={setCustomPrice}
+          customConferenceText={customConferenceText}
+          onSetConferenceText={setConferenceText}
           config={config}
         />
       </div>
@@ -237,6 +244,8 @@ export function ProposalBuilder({ config, pdfBlobUrl, onBack }) {
           templateUrl={templateUrl}
           selectedPages={selectedPages}
           config={config}
+          customPrices={customPrices}
+          customConferenceText={customConferenceText}
         />
       </div>
     </div>

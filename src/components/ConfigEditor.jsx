@@ -1,5 +1,16 @@
 import { useState } from 'react';
+import * as pdfjsLib from 'pdfjs-dist';
 import { RectangleDrawer } from './RectangleDrawer';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+
+// Format a value as "$1,234" — strips non-numeric chars, adds $ and commas
+function formatDollar(value) {
+  if (!value) return null;
+  const digits = String(value).replace(/[^0-9]/g, '');
+  if (!digits) return null;
+  return '$' + Number(digits).toLocaleString('en-US');
+}
 
 const DRAW_MODES = [
   { id: 'highlight', label: 'Suite Highlight', color: 'rgba(0, 100, 255, 0.3)', border: 'rgba(0, 100, 255, 0.8)' },
@@ -7,11 +18,14 @@ const DRAW_MODES = [
   { id: 'foundingPrice', label: 'Founding Price Row', color: 'rgba(0, 200, 100, 0.3)', border: 'rgba(0, 200, 100, 0.8)' },
 ];
 
+const CONFERENCE_DRAW_MODE = { id: 'conferenceText', label: 'Text Redaction', color: 'rgba(200, 50, 200, 0.3)', border: 'rgba(200, 50, 200, 0.8)' };
+
 export function ConfigEditor({ config, pageIndex, pageConfig, pdfBlobUrl, onUpdatePage }) {
   const [drawMode, setDrawMode] = useState('highlight');
 
   const isSuite = pageConfig.type === 'suite';
   const isOverview = pageConfig.type === 'overview';
+  const isConference = pageConfig.type === 'conference';
 
   // Get the active draw mode config
   const activeMode = DRAW_MODES.find(m => m.id === drawMode) || DRAW_MODES[0];
@@ -34,6 +48,68 @@ export function ConfigEditor({ config, pageIndex, pageConfig, pdfBlobUrl, onUpda
     return [];
   };
 
+  // Extract price text from PDF within a given rect region
+  const extractPriceFromRect = async (rect, pageIdx) => {
+    if (!pdfBlobUrl || !rect) return null;
+    try {
+      const pdf = await pdfjsLib.getDocument(pdfBlobUrl).promise;
+      const page = await pdf.getPage(pageIdx + 1);
+      const textContent = await page.getTextContent();
+      const pad = 5;
+      const match = textContent.items.find(item => {
+        const x = item.transform[4];
+        const y = item.transform[5];
+        return x >= rect.x - pad && x <= rect.x + rect.width + pad &&
+               y >= rect.y - pad && y <= rect.y + rect.height + pad &&
+               /\$/.test(item.str);
+      });
+      return match ? match.str.trim() : null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Extract any text from PDF within a given rect region
+  const extractTextFromRect = async (rect, pageIdx) => {
+    if (!pdfBlobUrl || !rect) return null;
+    try {
+      const pdf = await pdfjsLib.getDocument(pdfBlobUrl).promise;
+      const page = await pdf.getPage(pageIdx + 1);
+      const textContent = await page.getTextContent();
+      const pad = 5;
+      const matches = textContent.items.filter(item => {
+        const x = item.transform[4];
+        const y = item.transform[5];
+        return x >= rect.x - pad && x <= rect.x + rect.width + pad &&
+               y >= rect.y - pad && y <= rect.y + rect.height + pad;
+      });
+      return matches.length > 0 ? matches.map(m => m.str).join(' ').trim() : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleConferenceAddRect = (rect) => {
+    const cc = pageConfig.conferenceConfig || { textRedaction: null, defaultText: null };
+    const updated = { ...cc, textRedaction: rect };
+    onUpdatePage(pageIndex, { conferenceConfig: updated });
+    // Auto-extract text from the rect area
+    extractTextFromRect(rect, pageIndex).then(text => {
+      if (text) {
+        onUpdatePage(pageIndex, {
+          conferenceConfig: { ...updated, defaultText: text },
+        });
+      }
+    });
+  };
+
+  const handleConferenceDeleteRect = () => {
+    const cc = pageConfig.conferenceConfig || { textRedaction: null, defaultText: null };
+    onUpdatePage(pageIndex, {
+      conferenceConfig: { ...cc, textRedaction: null },
+    });
+  };
+
   const handleAddRect = (rect) => {
     if (!isSuite) return;
     const sc = pageConfig.suiteConfig || { highlightRects: [], priceRedaction: null, overviewPageIndex: null };
@@ -46,25 +122,43 @@ export function ConfigEditor({ config, pageIndex, pageConfig, pdfBlobUrl, onUpda
         },
       });
     } else if (drawMode === 'listPrice') {
-      onUpdatePage(pageIndex, {
-        suiteConfig: {
-          ...sc,
-          priceRedaction: {
-            ...(sc.priceRedaction || {}),
-            listPrice: rect,
-          },
+      const updated = {
+        ...sc,
+        priceRedaction: {
+          ...(sc.priceRedaction || {}),
+          listPrice: rect,
         },
-      });
+      };
+      onUpdatePage(pageIndex, { suiteConfig: updated });
+      // Auto-extract list price if not already set
+      if (!sc.listPrice) {
+        extractPriceFromRect(rect, pageIndex).then(price => {
+          if (price) {
+            onUpdatePage(pageIndex, {
+              suiteConfig: { ...updated, listPrice: formatDollar(price) },
+            });
+          }
+        });
+      }
     } else if (drawMode === 'foundingPrice') {
-      onUpdatePage(pageIndex, {
-        suiteConfig: {
-          ...sc,
-          priceRedaction: {
-            ...(sc.priceRedaction || {}),
-            foundingPrice: rect,
-          },
+      const updated = {
+        ...sc,
+        priceRedaction: {
+          ...(sc.priceRedaction || {}),
+          foundingPrice: rect,
         },
-      });
+      };
+      onUpdatePage(pageIndex, { suiteConfig: updated });
+      // Auto-extract founding price if not already set
+      if (!sc.foundingMemberPrice) {
+        extractPriceFromRect(rect, pageIndex).then(price => {
+          if (price) {
+            onUpdatePage(pageIndex, {
+              suiteConfig: { ...updated, foundingMemberPrice: formatDollar(price) },
+            });
+          }
+        });
+      }
     }
   };
 
@@ -192,6 +286,48 @@ export function ConfigEditor({ config, pageIndex, pageConfig, pdfBlobUrl, onUpda
             />
           </div>
 
+          {/* Price fields */}
+          <div className="suite-price-fields">
+            <div className="suite-price-input">
+              <label>List Price:</label>
+              <input
+                type="text"
+                value={pageConfig.suiteConfig?.listPrice ?? ''}
+                onChange={(e) => {
+                  const sc = pageConfig.suiteConfig || { highlightRects: [], priceRedaction: null, overviewPageIndex: null, deskCount: null, listPrice: null, foundingMemberPrice: null };
+                  onUpdatePage(pageIndex, { suiteConfig: { ...sc, listPrice: e.target.value || null } });
+                }}
+                onBlur={(e) => {
+                  const formatted = formatDollar(e.target.value);
+                  if (formatted !== (pageConfig.suiteConfig?.listPrice ?? null)) {
+                    const sc = pageConfig.suiteConfig || { highlightRects: [], priceRedaction: null, overviewPageIndex: null, deskCount: null, listPrice: null, foundingMemberPrice: null };
+                    onUpdatePage(pageIndex, { suiteConfig: { ...sc, listPrice: formatted } });
+                  }
+                }}
+                placeholder="$0,000"
+              />
+            </div>
+            <div className="suite-price-input">
+              <label>Founding Price:</label>
+              <input
+                type="text"
+                value={pageConfig.suiteConfig?.foundingMemberPrice ?? ''}
+                onChange={(e) => {
+                  const sc = pageConfig.suiteConfig || { highlightRects: [], priceRedaction: null, overviewPageIndex: null, deskCount: null, listPrice: null, foundingMemberPrice: null };
+                  onUpdatePage(pageIndex, { suiteConfig: { ...sc, foundingMemberPrice: e.target.value || null } });
+                }}
+                onBlur={(e) => {
+                  const formatted = formatDollar(e.target.value);
+                  if (formatted !== (pageConfig.suiteConfig?.foundingMemberPrice ?? null)) {
+                    const sc = pageConfig.suiteConfig || { highlightRects: [], priceRedaction: null, overviewPageIndex: null, deskCount: null, listPrice: null, foundingMemberPrice: null };
+                    onUpdatePage(pageIndex, { suiteConfig: { ...sc, foundingMemberPrice: formatted } });
+                  }
+                }}
+                placeholder="$0,000"
+              />
+            </div>
+          </div>
+
           {/* Rectangle drawer — show the overview page when drawing highlights,
               since highlight rects mark the suite's location on the floor plan */}
           {drawMode === 'highlight' && pageConfig.suiteConfig?.overviewPageIndex == null ? (
@@ -276,9 +412,59 @@ export function ConfigEditor({ config, pageIndex, pageConfig, pdfBlobUrl, onUpda
         </>
       )}
 
+      {isConference && (
+        <>
+          <div className="draw-toolbar">
+            <span className="toolbar-label">Draw:</span>
+            <button
+              className="btn-small draw-mode-btn active"
+              style={{ borderColor: CONFERENCE_DRAW_MODE.border, background: CONFERENCE_DRAW_MODE.color }}
+            >
+              {CONFERENCE_DRAW_MODE.label}
+            </button>
+          </div>
+
+          <div className="drawer-hint">
+            Drawing on: <strong>{pageConfig.label}</strong>
+          </div>
+          <RectangleDrawer
+            pdfBlobUrl={pdfBlobUrl}
+            pageIndex={pageIndex}
+            pageDimensions={config.pageDimensions}
+            rects={pageConfig.conferenceConfig?.textRedaction ? [pageConfig.conferenceConfig.textRedaction] : []}
+            onAddRect={handleConferenceAddRect}
+            onDeleteRect={handleConferenceDeleteRect}
+            rectColor={CONFERENCE_DRAW_MODE.color}
+            rectBorder={CONFERENCE_DRAW_MODE.border}
+          />
+
+          <div className="conference-default-text">
+            <label>Default Text:</label>
+            <input
+              type="text"
+              value={pageConfig.conferenceConfig?.defaultText ?? ''}
+              onChange={(e) => {
+                const cc = pageConfig.conferenceConfig || { textRedaction: null, defaultText: null };
+                onUpdatePage(pageIndex, { conferenceConfig: { ...cc, defaultText: e.target.value || null } });
+              }}
+              placeholder="e.g. Includes 30 hours/month"
+            />
+          </div>
+
+          <div className="rect-list">
+            <h4>Text Redaction</h4>
+            {pageConfig.conferenceConfig?.textRedaction && (
+              <div className="rect-item">
+                <span>x:{pageConfig.conferenceConfig.textRedaction.x} y:{pageConfig.conferenceConfig.textRedaction.y} w:{pageConfig.conferenceConfig.textRedaction.width} h:{pageConfig.conferenceConfig.textRedaction.height}</span>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
       {pageConfig.type === 'other' && (
         <div className="other-page-info">
-          <p>This page has no special configuration. Tag it as "Suite" or "Overview" to configure coordinates.</p>
+          <p>This page has no special configuration. Tag it as "Suite", "Overview", or "Conference" to configure coordinates.</p>
         </div>
       )}
     </div>

@@ -16,8 +16,9 @@ const LEGACY_PRICE_REDACTION_COORDS = {
  * @param {number[]} selectedPageNumbers - 1-indexed page numbers to include
  * @param {object} customPrices - map of pageNum → price string
  * @param {object} [config] - optional template config
+ * @param {object} [customConferenceText] - map of pageNum → conference text string
  */
-export async function exportSelectedPages(pdfSource, selectedPageNumbers, customPrices = {}, config) {
+export async function exportSelectedPages(pdfSource, selectedPageNumbers, customPrices = {}, config, customConferenceText = {}) {
   // Load template from URL or ArrayBuffer
   let templateBytes;
   if (typeof pdfSource === 'string') {
@@ -115,6 +116,37 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
       });
     }
 
+    // Conference text redaction
+    if (config) {
+      const pageConfig = config.pages[originalPageNum - 1];
+      if (pageConfig?.type === 'conference' && pageConfig.conferenceConfig?.textRedaction) {
+        const conferenceText = customConferenceText[originalPageNum] || pageConfig.conferenceConfig.defaultText;
+        if (conferenceText) {
+          const rect = pageConfig.conferenceConfig.textRedaction;
+          // Cover original text
+          page.drawRectangle({
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+            color: CREAM_COLOR,
+          });
+          // Draw replacement text centered in the rect
+          const fontSize = 12;
+          const textWidth = font.widthOfTextAtSize(conferenceText, fontSize);
+          const textX = rect.x + (rect.width - textWidth) / 2;
+          const textY = rect.y + (rect.height - fontSize) / 2 + 1;
+          page.drawText(conferenceText, {
+            x: textX,
+            y: textY,
+            size: fontSize,
+            font: font,
+            color: rgb(0.1, 0.1, 0.1),
+          });
+        }
+      }
+    }
+
     // Draw highlights on overview pages
     const highlights = getHighlightsForOverviewPage(originalPageNum, new Set(selectedPageNumbers), config);
     for (const rect of highlights) {
@@ -131,6 +163,39 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
     newPdf.addPage(page);
   });
 
+  // Insert summary page after the first overview page
+  if (config) {
+    const selectedSuites = [];
+    for (const pageNum of selectedPageNumbers) {
+      const pageConfig = config.pages[pageNum - 1];
+      if (pageConfig?.type === 'suite') {
+        const suiteName = pageConfig.label.split(' - ')[0] || pageConfig.label;
+        const deskCount = pageConfig.suiteConfig?.deskCount || null;
+        selectedSuites.push({
+          label: suiteName,
+          price: customPrices[pageNum] || pageConfig.suiteConfig?.listPrice || '',
+          desks: deskCount,
+        });
+      }
+    }
+
+    if (selectedSuites.length > 0) {
+      // Find position of first overview page in output order
+      let insertIndex = 0;
+      for (let i = 0; i < selectedPageNumbers.length; i++) {
+        const pageConfig = config.pages[selectedPageNumbers[i] - 1];
+        if (pageConfig?.type === 'overview') {
+          insertIndex = i + 1;
+          break;
+        }
+      }
+
+      const dims = config.pageDimensions || { width: 540, height: 779 };
+      const summaryPage = newPdf.insertPage(insertIndex, [dims.width, dims.height]);
+      drawSummaryPage(summaryPage, fontBold, font, selectedSuites, dims, BADGE_BLUE, BADGE_GRAY, CREAM_COLOR);
+    }
+  }
+
   const pdfBytes = await newPdf.save();
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
@@ -139,6 +204,97 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
   link.download = `proposal-${new Date().toISOString().split('T')[0]}.pdf`;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_GRAY, CREAM_COLOR) {
+  const { width, height } = dims;
+
+  // Cream background
+  page.drawRectangle({ x: 0, y: 0, width, height, color: CREAM_COLOR });
+
+  // Title
+  const titleSize = 22;
+  const titleText = 'Proposal Summary';
+  const titleWidth = fontBold.widthOfTextAtSize(titleText, titleSize);
+  page.drawText(titleText, {
+    x: (width - titleWidth) / 2,
+    y: height - 80,
+    size: titleSize,
+    font: fontBold,
+    color: BADGE_BLUE,
+  });
+
+  // Suite rows — 3 columns: name (blue), price (gray), desks (blue)
+  const rowHeight = 30;
+  const rowSpacing = 10;
+  const margin = 50;
+  const rowWidth = width - margin * 2;
+  const startX = margin;
+  let currentY = height - 130;
+  const fontSize = 12;
+  const colWidth = rowWidth / 3;
+
+  for (const suite of suites) {
+    const textY = currentY + (rowHeight - fontSize) / 2 + 1;
+
+    // Col 1: blue background with suite name in white
+    page.drawRectangle({
+      x: startX,
+      y: currentY,
+      width: colWidth,
+      height: rowHeight,
+      color: BADGE_BLUE,
+    });
+    const labelWidth = fontBold.widthOfTextAtSize(suite.label, fontSize);
+    page.drawText(suite.label, {
+      x: startX + (colWidth - labelWidth) / 2,
+      y: textY,
+      size: fontSize,
+      font: fontBold,
+      color: rgb(1, 1, 1),
+    });
+
+    // Col 2: gray background with price in blue
+    page.drawRectangle({
+      x: startX + colWidth,
+      y: currentY,
+      width: colWidth,
+      height: rowHeight,
+      color: BADGE_GRAY,
+    });
+    if (suite.price) {
+      const priceWidth = font.widthOfTextAtSize(suite.price, fontSize);
+      page.drawText(suite.price, {
+        x: startX + colWidth + (colWidth - priceWidth) / 2,
+        y: textY,
+        size: fontSize,
+        font: font,
+        color: BADGE_BLUE,
+      });
+    }
+
+    // Col 3: blue background with desk count in white
+    page.drawRectangle({
+      x: startX + colWidth * 2,
+      y: currentY,
+      width: colWidth,
+      height: rowHeight,
+      color: BADGE_BLUE,
+    });
+    if (suite.desks) {
+      const desksText = `up to ${suite.desks} desks`;
+      const desksWidth = fontBold.widthOfTextAtSize(desksText, fontSize);
+      page.drawText(desksText, {
+        x: startX + colWidth * 2 + (colWidth - desksWidth) / 2,
+        y: textY,
+        size: fontSize,
+        font: fontBold,
+        color: rgb(1, 1, 1),
+      });
+    }
+
+    currentY -= (rowHeight + rowSpacing);
+  }
 }
 
 function getRedactionCoords(pageNum, config) {

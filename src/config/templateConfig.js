@@ -46,6 +46,8 @@ export function migrateHardcodedConfig() {
         suiteConfig: {
           overviewPageIndex: 0,
           deskCount: 8,
+          listPrice: '$9,625',
+          foundingMemberPrice: '$8,750',
           highlightRects: [{ x: 75, y: 332, width: 47, height: 85 }],
           priceRedaction: {
             listPrice: { x: 52, y: 152, width: 440, height: 32 },
@@ -60,6 +62,8 @@ export function migrateHardcodedConfig() {
         suiteConfig: {
           overviewPageIndex: 0,
           deskCount: 4,
+          listPrice: '$4,500',
+          foundingMemberPrice: null,
           highlightRects: [{ x: 412, y: 383, width: 38, height: 47 }],
           priceRedaction: {
             listPrice: { x: 52, y: 152, width: 440, height: 32 },
@@ -74,6 +78,8 @@ export function migrateHardcodedConfig() {
         suiteConfig: {
           overviewPageIndex: 0,
           deskCount: 5,
+          listPrice: '$4,000',
+          foundingMemberPrice: null,
           highlightRects: [{ x: 338, y: 389, width: 56, height: 41 }],
           priceRedaction: {
             listPrice: { x: 52, y: 152, width: 440, height: 32 },
@@ -88,6 +94,8 @@ export function migrateHardcodedConfig() {
         suiteConfig: {
           overviewPageIndex: 0,
           deskCount: 4,
+          listPrice: '$2,750',
+          foundingMemberPrice: null,
           highlightRects: [{ x: 142, y: 467, width: 40, height: 44 }],
           priceRedaction: {
             listPrice: { x: 52, y: 152, width: 440, height: 32 },
@@ -110,6 +118,8 @@ export function migrateHardcodedConfig() {
         suiteConfig: {
           overviewPageIndex: 5,
           deskCount: 4,
+          listPrice: '$3,800',
+          foundingMemberPrice: '$3,450',
           highlightRects: [{ x: 322, y: 306, width: 73, height: 39 }],
           priceRedaction: {
             listPrice: { x: 52, y: 152, width: 440, height: 32 },
@@ -124,6 +134,8 @@ export function migrateHardcodedConfig() {
         suiteConfig: {
           overviewPageIndex: 5,
           deskCount: 6,
+          listPrice: '$8,100',
+          foundingMemberPrice: null,
           highlightRects: [{ x: 393, y: 439, width: 77, height: 49 }],
           priceRedaction: {
             listPrice: { x: 52, y: 152, width: 440, height: 32 },

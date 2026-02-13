@@ -12,6 +12,8 @@ export function PageSelector({
   pageData,
   customPrices,
   onSetCustomPrice,
+  customConferenceText,
+  onSetConferenceText,
   config
 }) {
   const [pages, setPages] = useState([]);
@@ -50,19 +52,23 @@ export function PageSelector({
           }).promise;
 
           // Derive metadata from config or fall back to pageData prop
-          let label, hasPricing, deskCount, rented;
+          let label, hasPricing, deskCount, rented, hasConferenceText, conferenceDefaultText;
           if (config) {
             const pageConfig = config.pages[i - 1];
             label = pageConfig?.label || `Page ${i}`;
             hasPricing = pageConfig?.type === 'suite' && !!pageConfig.suiteConfig?.priceRedaction;
             deskCount = pageConfig?.suiteConfig?.deskCount || null;
             rented = !!pageConfig?.suiteConfig?.rented;
+            hasConferenceText = pageConfig?.type === 'conference' && !!pageConfig.conferenceConfig?.textRedaction;
+            conferenceDefaultText = pageConfig?.conferenceConfig?.defaultText || '';
           } else {
             const meta = pageData[i - 1] || { label: `Page ${i}`, hasPricing: false };
             label = meta.label;
             hasPricing = meta.hasPricing;
             deskCount = null;
             rented = false;
+            hasConferenceText = false;
+            conferenceDefaultText = '';
           }
 
           pageDataList.push({
@@ -72,6 +78,8 @@ export function PageSelector({
             hasPricing,
             deskCount,
             rented,
+            hasConferenceText,
+            conferenceDefaultText,
           });
         }
 
@@ -162,6 +170,22 @@ export function PageSelector({
                   placeholder="Enter price..."
                   value={customPrices[page.pageNum] || ''}
                   onChange={(e) => onSetCustomPrice(page.pageNum, e.target.value)}
+                />
+              </div>
+            )}
+
+            {page.hasConferenceText && isSelected && (
+              <div className="custom-price-input" onClick={(e) => e.stopPropagation()}>
+                <label className="custom-price-label" htmlFor={`conf-${page.pageNum}`}>
+                  Conference Hours:
+                </label>
+                <input
+                  id={`conf-${page.pageNum}`}
+                  type="text"
+                  className="custom-price-field"
+                  placeholder={page.conferenceDefaultText || 'Enter text...'}
+                  value={customConferenceText?.[page.pageNum] || ''}
+                  onChange={(e) => onSetConferenceText?.(page.pageNum, e.target.value)}
                 />
               </div>
             )}

@@ -173,7 +173,7 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
         const deskCount = pageConfig.suiteConfig?.deskCount || null;
         selectedSuites.push({
           label: suiteName,
-          price: customPrices[pageNum] || pageConfig.suiteConfig?.listPrice || '',
+          price: customPrices[pageNum] || pageConfig.suiteConfig?.foundingMemberPrice || pageConfig.suiteConfig?.listPrice || '',
           desks: deskCount,
         });
       }

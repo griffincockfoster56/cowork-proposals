@@ -178,7 +178,7 @@ export function PdfPreview({ templateUrl, selectedPages, config, customPrices = 
           if (pageConfig?.type === 'suite') {
             const suiteName = pageConfig.label.split(' - ')[0] || pageConfig.label;
             const deskCount = pageConfig.suiteConfig?.deskCount || null;
-            const price = customPrices[pageNum] || pageConfig.suiteConfig?.listPrice || '';
+            const price = customPrices[pageNum] || pageConfig.suiteConfig?.foundingMemberPrice || pageConfig.suiteConfig?.listPrice || '';
 
             selectedSuites.push({
               label: suiteName,

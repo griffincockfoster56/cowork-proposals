@@ -723,6 +723,48 @@ body {
   margin-bottom: 16px;
 }
 
+/* Replace page */
+.replace-page-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.replace-page-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.replace-page-btn:hover:not(.disabled) {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+.replace-page-btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.replace-page-hint {
+  font-size: 12px;
+  color: #999;
+}
+
+/* Suite page preview (shown below overview in highlight mode) */
+.suite-page-preview {
+  margin-top: 16px;
+}
+
 /* Draw toolbar */
 .draw-toolbar {
   display: flex;

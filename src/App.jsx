@@ -47,7 +47,7 @@ function App() {
       setActiveConfig(config);
 
       if (config) {
-        if (config.id === 'default-template') {
+        if (config.pdfStorageKey === 'default-template') {
           setPdfBlobUrl('/template.pdf');
         } else {
           const arrayBuffer = await loadPdf(config.pdfStorageKey);

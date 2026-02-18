@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { RectangleDrawer } from './RectangleDrawer';
 
@@ -20,10 +20,36 @@ const DRAW_MODES = [
 
 const CONFERENCE_DRAW_MODE = { id: 'conferenceText', label: 'Text Redaction', color: 'rgba(200, 50, 200, 0.3)', border: 'rgba(200, 50, 200, 0.8)' };
 
-export function ConfigEditor({ config, pageIndex, pageConfig, pdfBlobUrl, onUpdatePage }) {
+export function ConfigEditor({ config, pageIndex, pageConfig, pdfBlobUrl, onUpdatePage, onReplacePage, replacing }) {
   const [drawMode, setDrawMode] = useState('highlight');
+  const [suitePageImage, setSuitePageImage] = useState(null);
 
   const isSuite = pageConfig.type === 'suite';
+
+  // Render the suite's own page as a static preview image
+  useEffect(() => {
+    if (!isSuite || !pdfBlobUrl) {
+      setSuitePageImage(null);
+      return;
+    }
+    let cancelled = false;
+    async function render() {
+      try {
+        const pdf = await pdfjsLib.getDocument(pdfBlobUrl).promise;
+        const page = await pdf.getPage(pageIndex + 1);
+        const viewport = page.getViewport({ scale: 1.5 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        if (!cancelled) setSuitePageImage(canvas.toDataURL());
+      } catch {
+        if (!cancelled) setSuitePageImage(null);
+      }
+    }
+    render();
+    return () => { cancelled = true; };
+  }, [isSuite, pdfBlobUrl, pageIndex]);
   const isOverview = pageConfig.type === 'overview';
   const isConference = pageConfig.type === 'conference';
 
@@ -219,6 +245,26 @@ export function ConfigEditor({ config, pageIndex, pageConfig, pdfBlobUrl, onUpda
       <h3>Page {pageIndex + 1}: {pageConfig.label}</h3>
       <div className="editor-type-badge">Type: <strong>{pageConfig.type}</strong></div>
 
+      <div className="replace-page-section">
+        <label className={`btn-small replace-page-btn${replacing ? ' disabled' : ''}`}>
+          {replacing ? 'Replacing...' : 'Replace Page'}
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            style={{ display: 'none' }}
+            disabled={replacing}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file && onReplacePage) {
+                onReplacePage(pageIndex, file);
+              }
+              e.target.value = '';
+            }}
+          />
+        </label>
+        <span className="replace-page-hint">Upload a PDF or image to replace this page</span>
+      </div>
+
       {isSuite && (
         <>
           {/* Draw mode toolbar */}
@@ -356,6 +402,18 @@ export function ConfigEditor({ config, pageIndex, pageConfig, pdfBlobUrl, onUpda
                 rectColor={activeMode.color}
                 rectBorder={activeMode.border}
               />
+
+              {/* Show the suite's own page below the overview when in highlight mode */}
+              {drawMode === 'highlight' && suitePageImage && (
+                <div className="suite-page-preview">
+                  <div className="drawer-hint">
+                    Suite page: <strong>{pageConfig.label}</strong>
+                  </div>
+                  <div className="drawer-canvas">
+                    <img src={suitePageImage} alt={pageConfig.label} style={{ width: '100%', display: 'block' }} />
+                  </div>
+                </div>
+              )}
             </>
           )}
 

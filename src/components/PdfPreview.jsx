@@ -5,7 +5,7 @@ import { getHighlightsForOverviewPage, PAGE_HEIGHT } from '../config/suiteHighli
 // Set up the worker using local file
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
-function renderSummaryCanvas(suites, dims, scale, style) {
+function renderSummaryCanvas(suites, dims, scale, style, borderImage) {
   const s = style || {
     backgroundFill: { r: 255, g: 253, b: 245 },
     badgeBlue: { r: 43, g: 58, b: 103 },
@@ -24,13 +24,18 @@ function renderSummaryCanvas(suites, dims, scale, style) {
   ctx.fillStyle = `rgb(${s.backgroundFill.r}, ${s.backgroundFill.g}, ${s.backgroundFill.b})`;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Draw border image as background overlay
+  if (borderImage) {
+    ctx.drawImage(borderImage, 0, 0, canvas.width, canvas.height);
+  }
+
   // Title
-  const titleSize = 22 * scale;
-  ctx.font = `bold ${titleSize}px Helvetica, Arial, sans-serif`;
-  ctx.fillStyle = blueColor;
+  const titleSize = 20 * scale;
+  ctx.font = `500 ${titleSize}px Inter, Helvetica, Arial, sans-serif`;
+  ctx.fillStyle = '#333333';
   const titleText = 'Proposal Summary';
   const titleWidth = ctx.measureText(titleText).width;
-  ctx.fillText(titleText, (canvas.width - titleWidth) / 2, 80 * scale);
+  ctx.fillText(titleText, (canvas.width - titleWidth) / 2, 230 * scale);
 
   // Suite rows — 3 columns: name (blue), price (gray), desks (blue)
   const rowHeight = 30 * scale;
@@ -38,7 +43,7 @@ function renderSummaryCanvas(suites, dims, scale, style) {
   const margin = 50 * scale;
   const rowWidth = canvas.width - margin * 2;
   const startX = margin;
-  let currentY = 130 * scale;
+  let currentY = 280 * scale;
   const fontSize = 12 * scale;
   const colWidth = rowWidth / 3;
 
@@ -79,11 +84,22 @@ function renderSummaryCanvas(suites, dims, scale, style) {
   return canvas.toDataURL();
 }
 
+// Load an image from a URL and return an HTMLImageElement
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
 export function PdfPreview({ templateUrl, selectedPages, config, customPrices = {}, customConferenceText = {} }) {
   const [pdfDoc, setPdfDoc] = useState(null);
   const [renderedPages, setRenderedPages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rendering, setRendering] = useState(false);
+  const [borderImage, setBorderImage] = useState(null);
 
   const pageHeight = config?.pageDimensions?.height || PAGE_HEIGHT;
 
@@ -111,6 +127,17 @@ export function PdfPreview({ templateUrl, selectedPages, config, customPrices = 
       cancelled = true;
     };
   }, [templateUrl]);
+
+  // Load summary border image
+  useEffect(() => {
+    let cancelled = false;
+
+    loadImage('/summary-border.png')
+      .then(img => { if (!cancelled) setBorderImage(img); })
+      .catch(e => console.warn('Could not load summary border:', e));
+
+    return () => { cancelled = true; };
+  }, []);
 
   // Render selected pages at full size
   useEffect(() => {
@@ -191,19 +218,9 @@ export function PdfPreview({ templateUrl, selectedPages, config, customPrices = 
         if (selectedSuites.length > 0) {
           const dims = config.pageDimensions || { width: 540, height: 779 };
           const scale = 1.5;
-          const summaryDataUrl = renderSummaryCanvas(selectedSuites, dims, scale, config.style);
+          const summaryDataUrl = renderSummaryCanvas(selectedSuites, dims, scale, config.style, borderImage);
 
-          // Insert after first overview page
-          let insertIndex = 0;
-          for (let i = 0; i < rendered.length; i++) {
-            const pageConfig = config.pages[rendered[i].pageNum - 1];
-            if (pageConfig?.type === 'overview') {
-              insertIndex = i + 1;
-              break;
-            }
-          }
-
-          rendered.splice(insertIndex, 0, {
+          rendered.splice(0, 0, {
             pageNum: 'summary',
             isSummary: true,
             dataUrl: summaryDataUrl,
@@ -224,7 +241,7 @@ export function PdfPreview({ templateUrl, selectedPages, config, customPrices = 
     return () => {
       cancelled = true;
     };
-  }, [pdfDoc, selectedPages, config, pageHeight, customPrices, customConferenceText]);
+  }, [pdfDoc, selectedPages, config, pageHeight, customPrices, customConferenceText, borderImage]);
 
   if (loading) {
     return (

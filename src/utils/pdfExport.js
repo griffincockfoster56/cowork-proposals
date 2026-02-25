@@ -29,8 +29,26 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
   const templatePdf = await PDFDocument.load(templateBytes);
 
   const newPdf = await PDFDocument.create();
+
+  // Load and embed summary border image
+  let embeddedBorderImage = null;
+  try {
+    const borderBytes = await fetch('/summary-border.png').then(res => res.arrayBuffer());
+    embeddedBorderImage = await newPdf.embedPng(borderBytes);
+  } catch (e) {
+    console.warn('Could not load summary border image:', e);
+  }
   const fontBold = await newPdf.embedFont(StandardFonts.HelveticaBold);
   const font = await newPdf.embedFont(StandardFonts.Helvetica);
+
+  // Load Inter Medium for summary title
+  let interMedium = fontBold; // fallback
+  try {
+    const interBytes = await fetch('/Inter-Medium.ttf').then(res => res.arrayBuffer());
+    interMedium = await newPdf.embedFont(interBytes);
+  } catch (e) {
+    console.warn('Could not load Inter Medium font:', e);
+  }
 
   // Resolve style from config or use defaults
   const style = config?.style || {
@@ -180,19 +198,9 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
     }
 
     if (selectedSuites.length > 0) {
-      // Find position of first overview page in output order
-      let insertIndex = 0;
-      for (let i = 0; i < selectedPageNumbers.length; i++) {
-        const pageConfig = config.pages[selectedPageNumbers[i] - 1];
-        if (pageConfig?.type === 'overview') {
-          insertIndex = i + 1;
-          break;
-        }
-      }
-
       const dims = config.pageDimensions || { width: 540, height: 779 };
-      const summaryPage = newPdf.insertPage(insertIndex, [dims.width, dims.height]);
-      drawSummaryPage(summaryPage, fontBold, font, selectedSuites, dims, BADGE_BLUE, BADGE_GRAY, CREAM_COLOR);
+      const summaryPage = newPdf.insertPage(0, [dims.width, dims.height]);
+      drawSummaryPage(summaryPage, fontBold, font, selectedSuites, dims, BADGE_BLUE, BADGE_GRAY, CREAM_COLOR, embeddedBorderImage, interMedium);
     }
   }
 
@@ -206,22 +214,33 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
   URL.revokeObjectURL(url);
 }
 
-function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_GRAY, CREAM_COLOR) {
+function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_GRAY, CREAM_COLOR, embeddedBorderImage, interMedium) {
   const { width, height } = dims;
 
   // Cream background
   page.drawRectangle({ x: 0, y: 0, width, height, color: CREAM_COLOR });
 
+  // Draw border image as background overlay (scaled to fit page dimensions)
+  if (embeddedBorderImage) {
+    page.drawImage(embeddedBorderImage, {
+      x: 0,
+      y: 0,
+      width,
+      height,
+    });
+  }
+
   // Title
-  const titleSize = 22;
+  const titleFont = interMedium || fontBold;
+  const titleSize = 20;
   const titleText = 'Proposal Summary';
-  const titleWidth = fontBold.widthOfTextAtSize(titleText, titleSize);
+  const titleWidth = titleFont.widthOfTextAtSize(titleText, titleSize);
   page.drawText(titleText, {
     x: (width - titleWidth) / 2,
-    y: height - 80,
+    y: height - 230,
     size: titleSize,
-    font: fontBold,
-    color: BADGE_BLUE,
+    font: titleFont,
+    color: rgb(0.2, 0.2, 0.2),
   });
 
   // Suite rows — 3 columns: name (blue), price (gray), desks (blue)
@@ -230,7 +249,7 @@ function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_G
   const margin = 50;
   const rowWidth = width - margin * 2;
   const startX = margin;
-  let currentY = height - 130;
+  let currentY = height - 280;
   const fontSize = 12;
   const colWidth = rowWidth / 3;
 

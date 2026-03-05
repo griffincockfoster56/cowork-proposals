@@ -14,7 +14,7 @@ export function createBlankConfig(id, name, numPages, dims) {
     })),
     style: {
       backgroundFill: { r: 255, g: 253, b: 245 },
-      badgeBlue: { r: 43, g: 58, b: 103 },
+      badgeBlue: { r: 15, g: 46, b: 73 },
       badgeGray: { r: 235, g: 235, b: 235 },
     },
   };
@@ -161,7 +161,7 @@ export function migrateHardcodedConfig() {
     ],
     style: {
       backgroundFill: { r: 255, g: 253, b: 245 },
-      badgeBlue: { r: 43, g: 58, b: 103 },
+      badgeBlue: { r: 15, g: 46, b: 73 },
       badgeGray: { r: 235, g: 235, b: 235 },
     },
   };

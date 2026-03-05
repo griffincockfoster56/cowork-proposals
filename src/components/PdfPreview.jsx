@@ -8,7 +8,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 function renderSummaryCanvas(suites, dims, scale, style, borderImage) {
   const s = style || {
     backgroundFill: { r: 255, g: 253, b: 245 },
-    badgeBlue: { r: 43, g: 58, b: 103 },
+    badgeBlue: { r: 15, g: 46, b: 73 },
     badgeGray: { r: 235, g: 235, b: 235 },
   };
 
@@ -31,7 +31,7 @@ function renderSummaryCanvas(suites, dims, scale, style, borderImage) {
 
   // Title
   const titleSize = 16 * scale;
-  ctx.font = `bold ${titleSize}px Helvetica, Arial, sans-serif`;
+  ctx.font = `bold ${titleSize}px 'Work Sans', Helvetica, Arial, sans-serif`;
   ctx.fillStyle = '#333333';
   const titleText = 'Proposal Summary';
   const titleWidth = ctx.measureText(titleText).width;

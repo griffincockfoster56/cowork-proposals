@@ -41,19 +41,19 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
   const fontBold = await newPdf.embedFont(StandardFonts.HelveticaBold);
   const font = await newPdf.embedFont(StandardFonts.Helvetica);
 
-  // Load Inter Medium for summary title
-  let interMedium = fontBold; // fallback
+  // Load Work Sans Bold for summary title
+  let workSansBold = fontBold; // fallback
   try {
-    const interBytes = await fetch('/Inter-Medium.ttf').then(res => res.arrayBuffer());
-    interMedium = await newPdf.embedFont(interBytes);
+    const workSansBytes = await fetch('/WorkSans-Bold.ttf').then(res => res.arrayBuffer());
+    workSansBold = await newPdf.embedFont(workSansBytes);
   } catch (e) {
-    console.warn('Could not load Inter Medium font:', e);
+    console.warn('Could not load Work Sans Bold font:', e);
   }
 
   // Resolve style from config or use defaults
   const style = config?.style || {
     backgroundFill: { r: 255, g: 253, b: 245 },
-    badgeBlue: { r: 43, g: 58, b: 103 },
+    badgeBlue: { r: 15, g: 46, b: 73 },
     badgeGray: { r: 235, g: 235, b: 235 },
   };
   const CREAM_COLOR = rgb(style.backgroundFill.r / 255, style.backgroundFill.g / 255, style.backgroundFill.b / 255);
@@ -209,7 +209,7 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
     if (selectedSuites.length > 0) {
       const dims = config.pageDimensions || { width: 540, height: 779 };
       const summaryPage = newPdf.insertPage(0, [dims.width, dims.height]);
-      drawSummaryPage(summaryPage, fontBold, font, selectedSuites, dims, BADGE_BLUE, BADGE_GRAY, CREAM_COLOR, embeddedBorderImage, interMedium);
+      drawSummaryPage(summaryPage, fontBold, font, selectedSuites, dims, BADGE_BLUE, BADGE_GRAY, CREAM_COLOR, embeddedBorderImage, workSansBold);
     }
   }
 
@@ -223,7 +223,7 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
   URL.revokeObjectURL(url);
 }
 
-function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_GRAY, CREAM_COLOR, embeddedBorderImage, interMedium) {
+function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_GRAY, CREAM_COLOR, embeddedBorderImage, workSansBold) {
   const { width, height } = dims;
 
   // Cream background
@@ -240,7 +240,7 @@ function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_G
   }
 
   // Title
-  const titleFont = fontBold;
+  const titleFont = workSansBold || fontBold;
   const titleSize = 16;
   const titleText = 'Proposal Summary';
   const titleWidth = titleFont.widthOfTextAtSize(titleText, titleSize);

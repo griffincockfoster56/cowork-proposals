@@ -51,7 +51,7 @@ body {
 .tools-header h1 {
   margin: 0;
   font-size: 20px;
-  color: #2B3A67;
+  color: #0F2E49;
 }
 
 .tools-actions {
@@ -109,7 +109,7 @@ body {
 }
 
 .page-item.selected {
-  border-color: #2B3A67;
+  border-color: #0F2E49;
   background: #f0f4ff;
 }
 
@@ -128,7 +128,7 @@ body {
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #2B3A67;
+  accent-color: #0F2E49;
 }
 
 .page-thumbnail {
@@ -168,7 +168,7 @@ body {
 
 .page-desk-count {
   font-size: 12px;
-  color: #2B3A67;
+  color: #0F2E49;
   font-weight: 500;
 }
 
@@ -201,7 +201,7 @@ body {
 
 .custom-price-field:focus {
   outline: none;
-  border-color: #2B3A67;
+  border-color: #0F2E49;
 }
 
 /* PDF Preview */
@@ -245,7 +245,7 @@ body {
 
 .preview-header {
   padding: 12px 20px;
-  background: #2B3A67;
+  background: #0F2E49;
   color: #fff;
   display: flex;
   align-items: center;
@@ -342,7 +342,7 @@ body {
 
 /* Buttons */
 .btn-primary {
-  background: #2B3A67;
+  background: #0F2E49;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -354,7 +354,7 @@ body {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #3d4f7a;
+  background: #1a4a6b;
 }
 
 .btn-primary:disabled {
@@ -441,7 +441,7 @@ body {
 .manager-header h1 {
   margin: 0;
   font-size: 24px;
-  color: #2B3A67;
+  color: #0F2E49;
 }
 
 .upload-btn {
@@ -463,7 +463,7 @@ body {
   text-decoration: none;
   text-align: center;
   padding: 12px 20px;
-  background: #2B3A67;
+  background: #0F2E49;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -474,7 +474,7 @@ body {
 }
 
 .walkthrough-btn:hover {
-  background: #3d4f7a;
+  background: #1a4a6b;
 }
 
 .template-grid {
@@ -580,7 +580,7 @@ body {
 
 .setup-name-input:focus {
   outline: none;
-  border-color: #2B3A67;
+  border-color: #0F2E49;
 }
 
 .setup-body {
@@ -647,7 +647,7 @@ body {
 }
 
 .tagger-item.active {
-  border-color: #2B3A67;
+  border-color: #0F2E49;
   background: #f0f4ff;
 }
 
@@ -685,7 +685,7 @@ body {
 
 .tagger-label:focus {
   outline: none;
-  border-color: #2B3A67;
+  border-color: #0F2E49;
 }
 
 .tagger-type {
@@ -833,7 +833,7 @@ body {
 
 .desk-count-input:focus {
   outline: none;
-  border-color: #2B3A67;
+  border-color: #0F2E49;
 }
 
 /* Drawer hint & placeholder */
@@ -912,7 +912,7 @@ body {
 }
 
 .suite-link-item input {
-  accent-color: #2B3A67;
+  accent-color: #0F2E49;
 }
 
 .no-suites-msg {
@@ -957,7 +957,7 @@ body {
 
 .availability-date-input:focus {
   outline: none;
-  border-color: #2B3A67;
+  border-color: #0F2E49;
 }
 
 /* Rented badge in page selector */
@@ -1053,7 +1053,7 @@ body {
 
 .auto-select-desks-input:focus {
   outline: none;
-  border-color: #2B3A67;
+  border-color: #0F2E49;
 }
 
 .auto-select-rented {
@@ -1067,25 +1067,25 @@ body {
 }
 
 .auto-select-rented input {
-  accent-color: #2B3A67;
+  accent-color: #0F2E49;
 }
 
 .btn-auto-select {
   margin-left: auto;
-  background: #2B3A67;
+  background: #0F2E49;
   color: #fff;
   border: none;
   font-weight: 500;
 }
 
 .btn-auto-select:hover {
-  background: #3d4f7a;
+  background: #1a4a6b;
 }
 
 /* ==================== AI Help Link ==================== */
 .ai-help-link {
   font-size: 13px;
-  color: #2B3A67;
+  color: #0F2E49;
   text-decoration: none;
   padding: 6px 12px;
   border: 1px solid #d0d0d0;
@@ -1098,7 +1098,7 @@ body {
 
 .ai-help-link:hover {
   background: #f0f4ff;
-  border-color: #2B3A67;
+  border-color: #0F2E49;
 }
 
 .walkthrough-buttons .ai-help-link {

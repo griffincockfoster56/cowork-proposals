@@ -52,7 +52,7 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
 
   // Resolve style from config or use defaults
   const style = config?.style || {
-    backgroundFill: { r: 255, g: 253, b: 245 },
+    backgroundFill: { r: 254, g: 247, b: 237 },
     badgeBlue: { r: 15, g: 46, b: 73 },
     badgeGray: { r: 235, g: 235, b: 235 },
   };

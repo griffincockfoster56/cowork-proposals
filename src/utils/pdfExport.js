@@ -44,7 +44,7 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
   // Load Work Sans Regular for summary title
   let workSansRegular = font; // fallback
   try {
-    const workSansBytes = await fetch('/WorkSans-Regular.ttf').then(res => res.arrayBuffer());
+    const workSansBytes = await fetch('/WorkSans-SemiBold.ttf').then(res => res.arrayBuffer());
     workSansRegular = await newPdf.embedFont(workSansBytes);
   } catch (e) {
     console.warn('Could not load Work Sans Regular font:', e);

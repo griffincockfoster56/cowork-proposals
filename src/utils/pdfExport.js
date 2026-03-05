@@ -244,9 +244,9 @@ function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_G
   const BORDER_BG = rgb(254 / 255, 247 / 255, 237 / 255);
   page.drawRectangle({
     x: width * 0.25,
-    y: height - height * 0.2,
+    y: height - height * 0.195,
     width: width * 0.5,
-    height: height * 0.025,
+    height: height * 0.01,
     color: BORDER_BG,
   });
 

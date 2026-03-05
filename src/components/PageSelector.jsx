@@ -52,13 +52,15 @@ export function PageSelector({
           }).promise;
 
           // Derive metadata from config or fall back to pageData prop
-          let label, hasPricing, deskCount, rented, hasConferenceText, conferenceDefaultText;
+          let label, hasPricing, deskCount, availability, availableDate, hasConferenceText, conferenceDefaultText;
           if (config) {
             const pageConfig = config.pages[i - 1];
             label = pageConfig?.label || `Page ${i}`;
             hasPricing = pageConfig?.type === 'suite' && !!pageConfig.suiteConfig?.priceRedaction;
             deskCount = pageConfig?.suiteConfig?.deskCount || null;
-            rented = !!pageConfig?.suiteConfig?.rented;
+            // Backward compat: old rented boolean → new availability field
+            availability = pageConfig?.suiteConfig?.availability || (pageConfig?.suiteConfig?.rented ? 'rented' : 'available');
+            availableDate = pageConfig?.suiteConfig?.availableDate || null;
             hasConferenceText = pageConfig?.type === 'conference' && !!pageConfig.conferenceConfig?.textRedaction;
             conferenceDefaultText = pageConfig?.conferenceConfig?.defaultText || '';
           } else {
@@ -66,7 +68,8 @@ export function PageSelector({
             label = meta.label;
             hasPricing = meta.hasPricing;
             deskCount = null;
-            rented = false;
+            availability = 'available';
+            availableDate = null;
             hasConferenceText = false;
             conferenceDefaultText = '';
           }
@@ -77,7 +80,8 @@ export function PageSelector({
             label,
             hasPricing,
             deskCount,
-            rented,
+            availability,
+            availableDate,
             hasConferenceText,
             conferenceDefaultText,
           });
@@ -152,8 +156,13 @@ export function PageSelector({
                     {page.deskCount} desks
                   </span>
                 )}
-                {page.rented && (
+                {page.availability === 'rented' && (
                   <span className="page-rented-badge">Rented</span>
+                )}
+                {page.availability === 'available_date' && page.availableDate && (
+                  <span className="page-available-badge">
+                    Available {new Date(page.availableDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
                 )}
               </div>
             </div>

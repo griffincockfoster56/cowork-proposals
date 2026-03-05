@@ -928,25 +928,36 @@ body {
   font-size: 14px;
 }
 
-/* Suite rented (config editor) */
-.suite-rented {
+/* Suite availability (config editor) */
+.suite-availability {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
 }
 
-.suite-rented label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.suite-availability label {
   font-size: 13px;
   color: #666;
-  cursor: pointer;
 }
 
-.suite-rented input {
-  accent-color: #2B3A67;
+.suite-availability select {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.availability-date-input {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.availability-date-input:focus {
+  outline: none;
+  border-color: #2B3A67;
 }
 
 /* Rented badge in page selector */
@@ -956,6 +967,17 @@ body {
   color: #c33;
   font-weight: 600;
   background: #fef0f0;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+/* Available badge in page selector */
+.page-available-badge {
+  display: inline-block;
+  font-size: 11px;
+  color: #2a7a2a;
+  font-weight: 600;
+  background: #eef8ee;
   padding: 1px 6px;
   border-radius: 3px;
 }

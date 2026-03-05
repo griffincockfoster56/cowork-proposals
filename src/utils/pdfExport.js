@@ -189,10 +189,19 @@ export async function exportSelectedPages(pdfSource, selectedPageNumbers, custom
       if (pageConfig?.type === 'suite') {
         const suiteName = pageConfig.label.split(' - ')[0] || pageConfig.label;
         const deskCount = pageConfig.suiteConfig?.deskCount || null;
+        const availability = pageConfig.suiteConfig?.availability || (pageConfig.suiteConfig?.rented ? 'rented' : 'available');
+        let available = '';
+        if (availability === 'available_date' && pageConfig.suiteConfig?.availableDate) {
+          const d = new Date(pageConfig.suiteConfig.availableDate + 'T00:00:00');
+          available = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+        } else if (availability === 'available') {
+          available = 'Today';
+        }
         selectedSuites.push({
           label: suiteName,
           price: customPrices[pageNum] || pageConfig.suiteConfig?.foundingMemberPrice || pageConfig.suiteConfig?.listPrice || '',
           desks: deskCount,
+          available,
         });
       }
     }
@@ -231,8 +240,8 @@ function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_G
   }
 
   // Title
-  const titleFont = interMedium || fontBold;
-  const titleSize = 20;
+  const titleFont = fontBold;
+  const titleSize = 16;
   const titleText = 'Proposal Summary';
   const titleWidth = titleFont.widthOfTextAtSize(titleText, titleSize);
   page.drawText(titleText, {
@@ -243,7 +252,7 @@ function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_G
     color: rgb(0.2, 0.2, 0.2),
   });
 
-  // Suite rows — 3 columns: name (blue), price (gray), desks (blue)
+  // Suite rows — 4 columns: name (blue), price (gray), desks (blue), available (gray)
   const rowHeight = 30;
   const rowSpacing = 10;
   const margin = 50;
@@ -251,65 +260,62 @@ function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_G
   const startX = margin;
   let currentY = height - 280;
   const fontSize = 12;
-  const colWidth = rowWidth / 3;
+  const colWidth = rowWidth / 4;
+
+  // Header row
+  const headerY = currentY;
+  const headerTextY = headerY + (rowHeight - fontSize) / 2 + 1;
+
+  // Header Col 1: blue bg, white text
+  page.drawRectangle({ x: startX, y: headerY, width: colWidth, height: rowHeight, color: BADGE_BLUE });
+  const h1 = 'Suite Number';
+  page.drawText(h1, { x: startX + (colWidth - fontBold.widthOfTextAtSize(h1, fontSize)) / 2, y: headerTextY, size: fontSize, font: fontBold, color: rgb(1, 1, 1) });
+
+  // Header Col 2: gray bg, blue text
+  page.drawRectangle({ x: startX + colWidth, y: headerY, width: colWidth, height: rowHeight, color: BADGE_GRAY });
+  const h2 = 'Price';
+  page.drawText(h2, { x: startX + colWidth + (colWidth - fontBold.widthOfTextAtSize(h2, fontSize)) / 2, y: headerTextY, size: fontSize, font: fontBold, color: BADGE_BLUE });
+
+  // Header Col 3: blue bg, white text
+  page.drawRectangle({ x: startX + colWidth * 2, y: headerY, width: colWidth, height: rowHeight, color: BADGE_BLUE });
+  const h3 = 'Number of Desks';
+  page.drawText(h3, { x: startX + colWidth * 2 + (colWidth - fontBold.widthOfTextAtSize(h3, fontSize)) / 2, y: headerTextY, size: fontSize, font: fontBold, color: rgb(1, 1, 1) });
+
+  // Header Col 4: gray bg, blue text
+  page.drawRectangle({ x: startX + colWidth * 3, y: headerY, width: colWidth, height: rowHeight, color: BADGE_GRAY });
+  const h4 = 'Available';
+  page.drawText(h4, { x: startX + colWidth * 3 + (colWidth - fontBold.widthOfTextAtSize(h4, fontSize)) / 2, y: headerTextY, size: fontSize, font: fontBold, color: BADGE_BLUE });
+
+  currentY -= (rowHeight + rowSpacing);
 
   for (const suite of suites) {
     const textY = currentY + (rowHeight - fontSize) / 2 + 1;
 
     // Col 1: blue background with suite name in white
-    page.drawRectangle({
-      x: startX,
-      y: currentY,
-      width: colWidth,
-      height: rowHeight,
-      color: BADGE_BLUE,
-    });
+    page.drawRectangle({ x: startX, y: currentY, width: colWidth, height: rowHeight, color: BADGE_BLUE });
     const labelWidth = fontBold.widthOfTextAtSize(suite.label, fontSize);
-    page.drawText(suite.label, {
-      x: startX + (colWidth - labelWidth) / 2,
-      y: textY,
-      size: fontSize,
-      font: fontBold,
-      color: rgb(1, 1, 1),
-    });
+    page.drawText(suite.label, { x: startX + (colWidth - labelWidth) / 2, y: textY, size: fontSize, font: fontBold, color: rgb(1, 1, 1) });
 
     // Col 2: gray background with price in blue
-    page.drawRectangle({
-      x: startX + colWidth,
-      y: currentY,
-      width: colWidth,
-      height: rowHeight,
-      color: BADGE_GRAY,
-    });
+    page.drawRectangle({ x: startX + colWidth, y: currentY, width: colWidth, height: rowHeight, color: BADGE_GRAY });
     if (suite.price) {
       const priceWidth = font.widthOfTextAtSize(suite.price, fontSize);
-      page.drawText(suite.price, {
-        x: startX + colWidth + (colWidth - priceWidth) / 2,
-        y: textY,
-        size: fontSize,
-        font: font,
-        color: BADGE_BLUE,
-      });
+      page.drawText(suite.price, { x: startX + colWidth + (colWidth - priceWidth) / 2, y: textY, size: fontSize, font: font, color: BADGE_BLUE });
     }
 
     // Col 3: blue background with desk count in white
-    page.drawRectangle({
-      x: startX + colWidth * 2,
-      y: currentY,
-      width: colWidth,
-      height: rowHeight,
-      color: BADGE_BLUE,
-    });
+    page.drawRectangle({ x: startX + colWidth * 2, y: currentY, width: colWidth, height: rowHeight, color: BADGE_BLUE });
     if (suite.desks) {
       const desksText = `up to ${suite.desks} desks`;
       const desksWidth = fontBold.widthOfTextAtSize(desksText, fontSize);
-      page.drawText(desksText, {
-        x: startX + colWidth * 2 + (colWidth - desksWidth) / 2,
-        y: textY,
-        size: fontSize,
-        font: fontBold,
-        color: rgb(1, 1, 1),
-      });
+      page.drawText(desksText, { x: startX + colWidth * 2 + (colWidth - desksWidth) / 2, y: textY, size: fontSize, font: fontBold, color: rgb(1, 1, 1) });
+    }
+
+    // Col 4: gray background with available date in blue
+    page.drawRectangle({ x: startX + colWidth * 3, y: currentY, width: colWidth, height: rowHeight, color: BADGE_GRAY });
+    if (suite.available) {
+      const availWidth = font.widthOfTextAtSize(suite.available, fontSize);
+      page.drawText(suite.available, { x: startX + colWidth * 3 + (colWidth - availWidth) / 2, y: textY, size: fontSize, font: font, color: BADGE_BLUE });
     }
 
     currentY -= (rowHeight + rowSpacing);

@@ -300,19 +300,31 @@ export function ConfigEditor({ config, pageIndex, pageConfig, pdfBlobUrl, onUpda
             </select>
           </div>
 
-          {/* Rented toggle */}
-          <div className="suite-rented">
-            <label>
+          {/* Availability selector */}
+          <div className="suite-availability">
+            <label>Availability:</label>
+            <select
+              value={pageConfig.suiteConfig?.availability || (pageConfig.suiteConfig?.rented ? 'rented' : 'available')}
+              onChange={(e) => {
+                const sc = pageConfig.suiteConfig || { highlightRects: [], priceRedaction: null, overviewPageIndex: null, deskCount: null };
+                onUpdatePage(pageIndex, { suiteConfig: { ...sc, availability: e.target.value, availableDate: e.target.value === 'available_date' ? (sc.availableDate || null) : null } });
+              }}
+            >
+              <option value="available">Available</option>
+              <option value="rented">Rented</option>
+              <option value="available_date">Available on date</option>
+            </select>
+            {(pageConfig.suiteConfig?.availability === 'available_date') && (
               <input
-                type="checkbox"
-                checked={!!pageConfig.suiteConfig?.rented}
+                type="date"
+                className="availability-date-input"
+                value={pageConfig.suiteConfig?.availableDate || ''}
                 onChange={(e) => {
-                  const sc = pageConfig.suiteConfig || { highlightRects: [], priceRedaction: null, overviewPageIndex: null, deskCount: null, rented: false };
-                  onUpdatePage(pageIndex, { suiteConfig: { ...sc, rented: e.target.checked } });
+                  const sc = pageConfig.suiteConfig || { highlightRects: [], priceRedaction: null, overviewPageIndex: null, deskCount: null };
+                  onUpdatePage(pageIndex, { suiteConfig: { ...sc, availableDate: e.target.value || null } });
                 }}
               />
-              Rented
-            </label>
+            )}
           </div>
 
           {/* Desk count */}

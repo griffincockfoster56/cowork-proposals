@@ -122,7 +122,8 @@ export function ProposalBuilder({ config, pdfBlobUrl, onBack }) {
       const deskCount = suite.suiteConfig?.deskCount || 0;
       if (deskCount < minDesks) return false;
       if (deskCount > maxDesks) return false;
-      if (state.excludeRented && suite.suiteConfig?.rented) return false;
+      const availability = suite.suiteConfig?.availability || (suite.suiteConfig?.rented ? 'rented' : 'available');
+      if (state.excludeRented && availability === 'rented') return false;
       return true;
     });
 
@@ -178,9 +179,10 @@ export function ProposalBuilder({ config, pdfBlobUrl, onBack }) {
             <div className="auto-select-title">Auto-Select by Floor</div>
             {overviewGroups.map(group => {
               const state = getAutoState(group.overviewPageIndex);
-              const availableCount = group.suites.filter(s =>
-                !s.suiteConfig?.rented
-              ).length;
+              const availableCount = group.suites.filter(s => {
+                const avail = s.suiteConfig?.availability || (s.suiteConfig?.rented ? 'rented' : 'available');
+                return avail !== 'rented';
+              }).length;
               const totalCount = group.suites.length;
               return (
                 <div key={group.overviewPageIndex} className="auto-select-group">

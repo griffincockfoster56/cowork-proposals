@@ -30,14 +30,14 @@ function renderSummaryCanvas(suites, dims, scale, style, borderImage) {
   }
 
   // Title
-  const titleSize = 20 * scale;
-  ctx.font = `500 ${titleSize}px Inter, Helvetica, Arial, sans-serif`;
+  const titleSize = 16 * scale;
+  ctx.font = `bold ${titleSize}px Helvetica, Arial, sans-serif`;
   ctx.fillStyle = '#333333';
   const titleText = 'Proposal Summary';
   const titleWidth = ctx.measureText(titleText).width;
   ctx.fillText(titleText, (canvas.width - titleWidth) / 2, 230 * scale);
 
-  // Suite rows — 3 columns: name (blue), price (gray), desks (blue)
+  // Suite rows — 4 columns: name (blue), price (gray), desks (blue), available (gray)
   const rowHeight = 30 * scale;
   const rowSpacing = 10 * scale;
   const margin = 50 * scale;
@@ -45,7 +45,44 @@ function renderSummaryCanvas(suites, dims, scale, style, borderImage) {
   const startX = margin;
   let currentY = 280 * scale;
   const fontSize = 12 * scale;
-  const colWidth = rowWidth / 3;
+  const colWidth = rowWidth / 4;
+
+  // Header row
+  const headerTextY = currentY + rowHeight / 2 + fontSize * 0.35;
+
+  // Header Col 1: blue bg, white text
+  ctx.fillStyle = blueColor;
+  ctx.fillRect(startX, currentY, colWidth, rowHeight);
+  ctx.font = `bold ${fontSize}px Helvetica, Arial, sans-serif`;
+  ctx.fillStyle = 'white';
+  const hw1 = ctx.measureText('Suite Number').width;
+  ctx.fillText('Suite Number', startX + (colWidth - hw1) / 2, headerTextY);
+
+  // Header Col 2: gray bg, blue text
+  ctx.fillStyle = grayColor;
+  ctx.fillRect(startX + colWidth, currentY, colWidth, rowHeight);
+  ctx.font = `bold ${fontSize}px Helvetica, Arial, sans-serif`;
+  ctx.fillStyle = blueColor;
+  const hw2 = ctx.measureText('Price').width;
+  ctx.fillText('Price', startX + colWidth + (colWidth - hw2) / 2, headerTextY);
+
+  // Header Col 3: blue bg, white text
+  ctx.fillStyle = blueColor;
+  ctx.fillRect(startX + colWidth * 2, currentY, colWidth, rowHeight);
+  ctx.font = `bold ${fontSize}px Helvetica, Arial, sans-serif`;
+  ctx.fillStyle = 'white';
+  const hw3 = ctx.measureText('Number of Desks').width;
+  ctx.fillText('Number of Desks', startX + colWidth * 2 + (colWidth - hw3) / 2, headerTextY);
+
+  // Header Col 4: gray bg, blue text
+  ctx.fillStyle = grayColor;
+  ctx.fillRect(startX + colWidth * 3, currentY, colWidth, rowHeight);
+  ctx.font = `bold ${fontSize}px Helvetica, Arial, sans-serif`;
+  ctx.fillStyle = blueColor;
+  const hw4 = ctx.measureText('Available').width;
+  ctx.fillText('Available', startX + colWidth * 3 + (colWidth - hw4) / 2, headerTextY);
+
+  currentY += rowHeight + rowSpacing;
 
   for (const suite of suites) {
     const textY = currentY + rowHeight / 2 + fontSize * 0.35;
@@ -76,6 +113,16 @@ function renderSummaryCanvas(suites, dims, scale, style, borderImage) {
       ctx.fillStyle = 'white';
       const desksWidth = ctx.measureText(desksText).width;
       ctx.fillText(desksText, startX + colWidth * 2 + (colWidth - desksWidth) / 2, textY);
+    }
+
+    // Col 4: gray background with available date in blue
+    ctx.fillStyle = grayColor;
+    ctx.fillRect(startX + colWidth * 3, currentY, colWidth, rowHeight);
+    if (suite.available) {
+      ctx.font = `${fontSize}px Helvetica, Arial, sans-serif`;
+      ctx.fillStyle = blueColor;
+      const availWidth = ctx.measureText(suite.available).width;
+      ctx.fillText(suite.available, startX + colWidth * 3 + (colWidth - availWidth) / 2, textY);
     }
 
     currentY += rowHeight + rowSpacing;
@@ -206,11 +253,20 @@ export function PdfPreview({ templateUrl, selectedPages, config, customPrices = 
             const suiteName = pageConfig.label.split(' - ')[0] || pageConfig.label;
             const deskCount = pageConfig.suiteConfig?.deskCount || null;
             const price = customPrices[pageNum] || pageConfig.suiteConfig?.foundingMemberPrice || pageConfig.suiteConfig?.listPrice || '';
+            const availability = pageConfig.suiteConfig?.availability || (pageConfig.suiteConfig?.rented ? 'rented' : 'available');
+            let available = '';
+            if (availability === 'available_date' && pageConfig.suiteConfig?.availableDate) {
+              const d = new Date(pageConfig.suiteConfig.availableDate + 'T00:00:00');
+              available = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+            } else if (availability === 'available') {
+              available = 'Today';
+            }
 
             selectedSuites.push({
               label: suiteName,
               price,
               desks: deskCount,
+              available,
             });
           }
         }

@@ -35,8 +35,8 @@ function renderSummaryCanvas(suites, dims, scale, style, borderImage) {
   ctx.fillRect(canvas.width * 0.25, canvas.height * 0.165, canvas.width * 0.5, canvas.height * 0.012);
 
   // Title
-  const titleSize = 16 * scale;
-  ctx.font = `bold ${titleSize}px 'Work Sans', Helvetica, Arial, sans-serif`;
+  const titleSize = 14 * scale;
+  ctx.font = `400 ${titleSize}px 'Work Sans', Helvetica, Arial, sans-serif`;
   ctx.fillStyle = '#333333';
   const titleText = 'Proposal Summary';
   const titleWidth = ctx.measureText(titleText).width;

@@ -240,12 +240,14 @@ function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_G
   }
 
   // Cover "WORKPLACE FOR BRAND BUILDERS" text from the border image
+  // Use exact background color sampled from the border image PNG
+  const BORDER_BG = rgb(254 / 255, 247 / 255, 237 / 255);
   page.drawRectangle({
     x: width * 0.25,
     y: height - height * 0.2,
     width: width * 0.5,
     height: height * 0.025,
-    color: CREAM_COLOR,
+    color: BORDER_BG,
   });
 
   // Title

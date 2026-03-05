@@ -30,7 +30,8 @@ function renderSummaryCanvas(suites, dims, scale, style, borderImage) {
   }
 
   // Cover "WORKPLACE FOR BRAND BUILDERS" text from the border image
-  ctx.fillStyle = `rgb(${s.backgroundFill.r}, ${s.backgroundFill.g}, ${s.backgroundFill.b})`;
+  // Use exact background color sampled from the border image PNG
+  ctx.fillStyle = 'rgb(254, 247, 237)';
   ctx.fillRect(canvas.width * 0.25, canvas.height * 0.175, canvas.width * 0.5, canvas.height * 0.025);
 
   // Title

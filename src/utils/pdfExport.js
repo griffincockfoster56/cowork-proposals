@@ -239,6 +239,15 @@ function drawSummaryPage(page, fontBold, font, suites, dims, BADGE_BLUE, BADGE_G
     });
   }
 
+  // Cover "WORKPLACE FOR BRAND BUILDERS" text from the border image
+  page.drawRectangle({
+    x: width * 0.25,
+    y: height - height * 0.2,
+    width: width * 0.5,
+    height: height * 0.025,
+    color: CREAM_COLOR,
+  });
+
   // Title
   const titleFont = workSansBold || fontBold;
   const titleSize = 16;

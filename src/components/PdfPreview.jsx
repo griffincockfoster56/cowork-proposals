@@ -29,6 +29,10 @@ function renderSummaryCanvas(suites, dims, scale, style, borderImage) {
     ctx.drawImage(borderImage, 0, 0, canvas.width, canvas.height);
   }
 
+  // Cover "WORKPLACE FOR BRAND BUILDERS" text from the border image
+  ctx.fillStyle = `rgb(${s.backgroundFill.r}, ${s.backgroundFill.g}, ${s.backgroundFill.b})`;
+  ctx.fillRect(canvas.width * 0.25, canvas.height * 0.175, canvas.width * 0.5, canvas.height * 0.025);
+
   // Title
   const titleSize = 16 * scale;
   ctx.font = `bold ${titleSize}px 'Work Sans', Helvetica, Arial, sans-serif`;
